@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..  # プロジェクトルートをビルドコンテキストに設定
+      dockerfile: docker/Dockerfile
+    container_name: book-manager-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/book_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+    depends_on:
+      - db # dbコンテナの起動を優先
+    networks:
+      - book-network
+
+  db:
+    image: postgres:latest
+    container_name: book-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: book_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - book-network
+
+volumes:
+  db_data:
+
+networks:
+  book-network:
+    driver: bridge
