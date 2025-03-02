@@ -2,7 +2,7 @@ package com.example.book_manager.controller
 
 import com.example.book_manager.dto.AuthorRequestDto
 import com.example.book_manager.dto.AuthorResponseDto
-import com.example.bookmanager.service.AuthorService
+import com.example.book_manager.service.AuthorService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

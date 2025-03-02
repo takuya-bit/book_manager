@@ -45,5 +45,4 @@ class BookRepository(private val dslContext: DSLContext) {
             .where(BOOK.ID.eq(bookRecord.id))
             .execute()
     }
-
 }
