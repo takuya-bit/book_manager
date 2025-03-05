@@ -1,7 +1,8 @@
 package com.example.book_manager.service
 
-import com.example.book_manager.dto.AuthorRequestDto
+import com.example.book_manager.dto.AuthorRegisterDto
 import com.example.book_manager.dto.AuthorResponseDto
+import com.example.book_manager.dto.AuthorUpdateDto
 import com.example.book_manager.repository.AuthorRepository
 import com.example.generated.tables.records.AuthorRecord
 import org.springframework.stereotype.Service
@@ -17,7 +18,7 @@ class AuthorService(private val authorRepository: AuthorRepository) {
      * @return 登録時のレスポンス情報
      */
     @Transactional
-    fun createAuthor(dto: AuthorRequestDto) {
+    fun createAuthor(dto: AuthorRegisterDto) {
         // 著者テーブルへの登録情報を設定する
         val authorRecord = AuthorRecord().apply {
             name = dto.name
@@ -35,14 +36,14 @@ class AuthorService(private val authorRepository: AuthorRepository) {
      * @param dto 更新情報
      */
     @Transactional
-    fun updateAuthor(id: Int, dto: AuthorRequestDto) {
+    fun updateAuthor(id: Int, dto: AuthorUpdateDto) {
         // 著者IDの存在チェック
         val authorRecord = authorRepository.findAuthorByAuthorId(id) ?: throw NoSuchElementException("Author not found")
 
         // 著者情報の更新
         authorRecord.apply {
-            name = dto.name
-            birthDate = dto.birthDate
+            name = dto.name ?: this.name
+            birthDate = dto.birthDate ?: this.birthDate
         }
         authorRepository.updateAuthor(authorRecord)
     }

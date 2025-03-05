@@ -6,7 +6,10 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Past
 import javax.validation.constraints.Pattern
 
-data class AuthorRequestDto(
+/**
+ * 著者の登録情報を詰めるDTO
+ */
+data class AuthorRegisterDto(
 
     /**
      * 著者名

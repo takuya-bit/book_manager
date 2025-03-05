@@ -3,9 +3,9 @@ package com.example.book_manager.dto
 import javax.validation.constraints.*
 
 /**
- * 書籍と著者の登録情報を詰めるDTO
+ * 書籍の登録情報を詰めるDTO
  */
-data class BookRequestDto(
+data class BookRegisterDto(
     /**
      * タイトル
      */

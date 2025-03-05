@@ -1,7 +1,8 @@
 package com.example.book_manager.controller
 
 import com.example.book_manager.service.BookService
-import com.example.book_manager.dto.BookRequestDto
+import com.example.book_manager.dto.BookRegisterDto
+import com.example.book_manager.dto.BookUpdateDto
 import com.example.book_manager.dto.BookResponseDto
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,7 +22,7 @@ class BookController(
      * @return 登録時のレスポンス情報
      */
     @PostMapping
-    fun createBook(@RequestBody @Valid dto: BookRequestDto): ResponseEntity<String> {
+    fun createBook(@RequestBody @Valid dto: BookRegisterDto): ResponseEntity<String> {
         bookService.createBook(dto)
         return ResponseEntity<String>("登録完了", HttpStatus.CREATED)
     }
@@ -33,7 +34,7 @@ class BookController(
      * @return 更新時のレスポンス情報
      */
     @PutMapping("/{id}")
-    fun updateBook(@PathVariable id: Int, @RequestBody @Valid dto: BookRequestDto): ResponseEntity<String> {
+    fun updateBook(@PathVariable id: Int, @RequestBody dto: BookUpdateDto): ResponseEntity<String> {
         bookService.updateBook(id, dto)
         return ResponseEntity<String>("更新完了", HttpStatus.OK)
     }

@@ -1,7 +1,8 @@
 package com.example.book_manager.service
 
-import com.example.book_manager.dto.BookRequestDto
+import com.example.book_manager.dto.BookRegisterDto
 import com.example.book_manager.dto.BookResponseDto
+import com.example.book_manager.dto.BookUpdateDto
 import com.example.book_manager.exception.InvalidPublicationStatusException
 import com.example.book_manager.model.PublicationStatus
 import com.example.book_manager.repository.AuthorRepository
@@ -25,7 +26,7 @@ class BookService(
      * @return 登録時のレスポンス情報
      */
     @Transactional
-    fun createBook(dto: BookRequestDto) {
+    fun createBook(dto: BookRegisterDto) {
         // 書籍テーブルへの登録情報を設定する
         val bookRecord = BookRecord().apply {
             title = dto.title
@@ -38,10 +39,8 @@ class BookService(
 
         // 登録情報.著者IDリストが値ありの場合
         if (dto.authorIds.isNotEmpty()) {
-            // 書籍と著者を紐づけるテーブルへの登録処理
-            dto.authorIds.forEach { authorId ->
-                bookAuthorRepository.insertBookAuthor(insertedBookId, authorId)
-            }
+            // 著者IDの数だけ書籍_著者テーブルにレコードを登録する
+            bookAuthorRepository.bulkInsertBookAuthors(insertedBookId, dto.authorIds)
         }
     }
 
@@ -84,32 +83,37 @@ class BookService(
      * @return 更新時のレスポンス情報
      */
     @Transactional
-    fun updateBook(id: Int, dto: BookRequestDto) {
+    fun updateBook(id: Int, dto: BookUpdateDto) {
         // パスパラメータ.書籍IDをもとに書籍情報を取得する（存在チェックも兼ねる）
         val bookRecord = bookRepository.findById(id) ?: throw NoSuchElementException("Book not found")
 
         // 更新情報.出版状況に対するバリデーションチェック
-        validatePublicationStatus(bookRecord.publicationStatus, dto.publicationStatus)
+        if (dto.publicationStatus != null) {
+            validatePublicationStatus(bookRecord.publicationStatus, dto.publicationStatus)
+        }
 
         // 更新情報.著者IDの存在チェック
-        dto.authorIds.forEach { authorId ->
+        dto.authorIds?.forEach { authorId ->
             authorRepository.findAuthorByAuthorId(authorId)
                 ?: throw NoSuchElementException("Author with ID $authorId not found")
         }
 
         // 書籍テーブルの更新
         bookRecord.apply {
-            title = dto.title
-            price = dto.price
-            publicationStatus = dto.publicationStatus
+            title = dto.title ?: this.title
+            price = dto.price ?: this.price
+            publicationStatus = dto.publicationStatus ?: this.publicationStatus
         }
         bookRepository.updateBook(bookRecord)
 
-        // 書籍_著者テーブルの更新
-        bookAuthorRepository.deleteBookAuthorsByBookId(id)
-        dto.authorIds.forEach { authorId ->
-            bookAuthorRepository.insertBookAuthor(id, authorId)
+        // 更新情報.著者IDリストが指定ありの場合
+        if (!dto.authorIds.isNullOrEmpty()) {
+            // パスパラメータ.書籍IDに紐づく書籍_著者テーブルのレコードを削除
+            bookAuthorRepository.deleteBookAuthorsByBookId(id)
+            // 著者IDの数だけ書籍_著者テーブルにレコードを登録する
+            bookAuthorRepository.bulkInsertBookAuthors(id, dto.authorIds)
         }
+
     }
 
     /**
@@ -119,7 +123,7 @@ class BookService(
      * @param newStatus 更新情報.出版状況
      * @throws InvalidPublicationStatusException 出版済みの書籍を未出版に更新しようとした場合の例外クラス
      */
-    private fun validatePublicationStatus(currentStatus: Int, newStatus: Int) {
+    private fun validatePublicationStatus(currentStatus: Int, newStatus: Int?) {
         if (newStatus == PublicationStatus.UNPUBLISHED.value && currentStatus == PublicationStatus.PUBLISHED.value) {
             throw InvalidPublicationStatusException("Cannot update a published book to unpublished status.")
         }
