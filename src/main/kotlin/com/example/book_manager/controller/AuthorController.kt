@@ -4,10 +4,11 @@ import com.example.book_manager.dto.AuthorRegisterDto
 import com.example.book_manager.dto.AuthorResponseDto
 import com.example.book_manager.dto.AuthorUpdateDto
 import com.example.book_manager.service.AuthorService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/authors")
@@ -20,9 +21,13 @@ class AuthorController(private val authorService: AuthorService) {
      * @return 登録時のレスポンス情報
      */
     @PostMapping
-    fun createAuthor(@RequestBody @Valid dto: AuthorRegisterDto): ResponseEntity<String> {
+    fun createAuthor(@RequestBody @Valid dto: AuthorRegisterDto, bindingResult: BindingResult): ResponseEntity<String> {
+        if (bindingResult.hasErrors()) {
+            val errors = bindingResult.allErrors.joinToString(", ") { it.defaultMessage ?: "Invalid value" }
+            return ResponseEntity(errors, HttpStatus.BAD_REQUEST)
+        }
         authorService.createAuthor(dto)
-        return ResponseEntity<String>("登録完了", HttpStatus.CREATED)
+        return ResponseEntity<String>("Register Completed", HttpStatus.CREATED)
     }
 
     /**
@@ -32,9 +37,17 @@ class AuthorController(private val authorService: AuthorService) {
      * @return 更新時のレスポンス情報
      */
     @PutMapping("/{id}")
-    fun updateAuthor(@PathVariable id: Int, @RequestBody @Valid dto: AuthorUpdateDto): ResponseEntity<String> {
+    fun updateAuthor(
+        @PathVariable id: Int,
+        @RequestBody @Valid dto: AuthorUpdateDto,
+        bindingResult: BindingResult
+    ): ResponseEntity<String> {
+        if (bindingResult.hasErrors()) {
+            val errors = bindingResult.allErrors.joinToString(", ") { it.defaultMessage ?: "Invalid value" }
+            return ResponseEntity(errors, HttpStatus.BAD_REQUEST)
+        }
         authorService.updateAuthor(id, dto)
-        return ResponseEntity<String>("更新完了", HttpStatus.OK)
+        return ResponseEntity<String>("Update Completed", HttpStatus.OK)
     }
 
     /**
@@ -45,7 +58,9 @@ class AuthorController(private val authorService: AuthorService) {
      */
     @GetMapping("/{id}")
     fun getAuthor(@PathVariable id: Int): ResponseEntity<AuthorResponseDto> {
-        val author = authorService.getAuthorById(id)
-        return ResponseEntity<AuthorResponseDto>(author, HttpStatus.OK)
+        return ResponseEntity<AuthorResponseDto>(
+            authorService.getAuthorById(id),
+            HttpStatus.OK
+        )
     }
 }

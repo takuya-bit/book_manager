@@ -1,5 +1,6 @@
 package com.example.book_manager.dto
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
 /**
@@ -8,5 +9,6 @@ import java.time.LocalDate
 data class AuthorResponseDto(
     val id: Int?,
     val name: String,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val birthDate: LocalDate
 )

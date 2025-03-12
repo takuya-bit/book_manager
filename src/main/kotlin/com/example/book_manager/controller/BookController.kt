@@ -6,6 +6,7 @@ import com.example.book_manager.dto.BookUpdateDto
 import com.example.book_manager.dto.BookResponseDto
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
@@ -22,9 +23,12 @@ class BookController(
      * @return 登録時のレスポンス情報
      */
     @PostMapping
-    fun createBook(@RequestBody @Valid dto: BookRegisterDto): ResponseEntity<String> {
+    fun createBook(@RequestBody @Valid dto: BookRegisterDto, bindingResult: BindingResult): ResponseEntity<String> {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity<String>("validation error", HttpStatus.BAD_REQUEST)
+        }
         bookService.createBook(dto)
-        return ResponseEntity<String>("登録完了", HttpStatus.CREATED)
+        return ResponseEntity<String>("Register Completed", HttpStatus.CREATED)
     }
 
     /**
@@ -34,9 +38,12 @@ class BookController(
      * @return 更新時のレスポンス情報
      */
     @PutMapping("/{id}")
-    fun updateBook(@PathVariable id: Int, @RequestBody dto: BookUpdateDto): ResponseEntity<String> {
+    fun updateBook(@PathVariable id: Int, @RequestBody dto: BookUpdateDto, bindingResult: BindingResult): ResponseEntity<String> {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity<String>("validation error", HttpStatus.BAD_REQUEST)
+        }
         bookService.updateBook(id, dto)
-        return ResponseEntity<String>("更新完了", HttpStatus.OK)
+        return ResponseEntity<String>("Update Completed", HttpStatus.OK)
     }
 
     /**
@@ -48,7 +55,8 @@ class BookController(
     @GetMapping("/{id}")
     fun getBook(@PathVariable id: Int): ResponseEntity<BookResponseDto> {
         return ResponseEntity<BookResponseDto>(
-            bookService.getBook(id), HttpStatus.OK
+            bookService.getBook(id),
+            HttpStatus.OK
         )
     }
 }
